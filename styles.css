@@ -39,14 +39,18 @@ body {
 }
 
 .app-shell {
-  width: min(1720px, calc(100vw - 1rem));
-  margin: 0.5rem auto;
+  width: 90vw;
+  height: 100vh;
+  margin: 0 auto;
   padding: 1rem;
   border-radius: 1rem;
   background: color-mix(in srgb, var(--surface) 92%, white 8%);
   border: 1px solid color-mix(in srgb, var(--line) 86%, white 14%);
   box-shadow: var(--shadow);
   animation: shell-in 260ms ease-out;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app-header h1 {
@@ -91,6 +95,14 @@ body {
 .tab-panel {
   margin-top: 1rem;
   animation: panel-in 190ms ease-out;
+  min-height: 0;
+}
+
+.tab-panel.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .toolbar,
@@ -111,6 +123,9 @@ body {
   color: var(--ink);
   border-radius: 0.6rem;
   padding: 0.45rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.93rem;
+  line-height: 1.2;
   font-weight: 560;
   cursor: pointer;
   transition: background-color 150ms ease, border-color 150ms ease;
@@ -127,6 +142,12 @@ body {
 .file-picker {
   display: inline-flex;
   align-items: center;
+  background: color-mix(in srgb, var(--accent) 14%, white 86%);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line) 58%);
+}
+
+.file-picker:hover {
+  background: color-mix(in srgb, var(--accent) 19%, white 81%);
 }
 
 .file-name {
@@ -140,7 +161,8 @@ body {
 
 #jsonInput {
   width: 100%;
-  min-height: 24rem;
+  flex: 1;
+  min-height: 0;
   margin-top: 0.7rem;
   border: 1px solid var(--line);
   border-radius: 0.8rem;
@@ -267,6 +289,8 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 3.2fr) minmax(18rem, 1fr);
   gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .tree-pane,
@@ -274,7 +298,11 @@ body {
   border: 1px solid var(--line);
   border-radius: 0.85rem;
   background: #fcfefb;
-  min-height: 23rem;
+  min-height: 0;
+}
+
+.tree-pane {
+  display: flex;
 }
 
 .viewer-main.results-collapsed {
@@ -287,8 +315,10 @@ body {
 
 .tree-container {
   padding: 0.7rem;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
-  max-height: 68vh;
   font-family: "Iosevka", "JetBrains Mono", "Consolas", monospace;
   font-size: 0.9rem;
 }
@@ -412,8 +442,10 @@ body {
 
 .results-pane {
   padding: 0.7rem;
-  overflow: auto;
-  max-height: 62vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .results-pane h2 {
@@ -428,6 +460,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .search-results button {
@@ -521,17 +556,12 @@ body {
   .viewer-main {
     grid-template-columns: 1fr;
   }
-
-  .tree-container,
-  .results-pane {
-    max-height: 45vh;
-  }
 }
 
 @media (max-width: 640px) {
   .app-shell {
-    width: calc(100vw - 1rem);
-    margin: 0.5rem auto;
+    width: 90vw;
+    margin: 0 auto;
     padding: 0.72rem;
     border-radius: 0.8rem;
   }
@@ -551,6 +581,6 @@ body {
   }
 
   #jsonInput {
-    min-height: 20rem;
+    min-height: 0;
   }
 }
