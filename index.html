@@ -27,7 +27,9 @@
         <button id="loadExampleBtn" type="button">Beispiel laden</button>
         <button id="formatBtn" type="button">Formatieren</button>
         <button id="minifyBtn" type="button">Minifizieren</button>
-        <button id="applyBtn" class="primary" type="button">Übernehmen</button>
+        <label class="file-picker" for="jsonFileInput">JSON-Datei laden</label>
+        <input id="jsonFileInput" class="sr-only" type="file" accept=".json,application/json,text/json">
+        <span id="selectedFileName" class="file-name">Keine Datei gewählt</span>
       </div>
       <label class="sr-only" for="jsonInput">JSON Eingabe</label>
       <textarea
@@ -51,6 +53,7 @@
         <div class="action-group">
           <button id="expandAllBtn" type="button">Alle erweitern</button>
           <button id="collapseAllBtn" type="button">Alle reduzieren</button>
+          <button id="toggleResultsBtn" type="button" aria-expanded="false">Trefferliste einblenden</button>
           <label class="switch" for="highlightToggle">
             <input id="highlightToggle" type="checkbox" checked>
             <span class="switch-track"></span>
@@ -59,7 +62,7 @@
         </div>
       </div>
 
-      <div class="viewer-main">
+      <div id="viewerMain" class="viewer-main results-collapsed">
         <div class="tree-pane">
           <div id="treeContainer" class="tree-container syntax-on" aria-live="polite">
             <div class="placeholder">Noch kein JSON geladen.</div>

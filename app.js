@@ -33,8 +33,9 @@ const refs = {
   tabButtons: document.querySelectorAll(".tab-button"),
   tabPanels: document.querySelectorAll(".tab-panel"),
   jsonInput: document.getElementById("jsonInput"),
+  jsonFileInput: document.getElementById("jsonFileInput"),
+  selectedFileName: document.getElementById("selectedFileName"),
   parseMessage: document.getElementById("parseMessage"),
-  applyBtn: document.getElementById("applyBtn"),
   formatBtn: document.getElementById("formatBtn"),
   minifyBtn: document.getElementById("minifyBtn"),
   loadExampleBtn: document.getElementById("loadExampleBtn"),
@@ -43,7 +44,9 @@ const refs = {
   searchCount: document.getElementById("searchCount"),
   expandAllBtn: document.getElementById("expandAllBtn"),
   collapseAllBtn: document.getElementById("collapseAllBtn"),
+  toggleResultsBtn: document.getElementById("toggleResultsBtn"),
   highlightToggle: document.getElementById("highlightToggle"),
+  viewerMain: document.getElementById("viewerMain"),
   treeContainer: document.getElementById("treeContainer"),
   searchResults: document.getElementById("searchResults"),
   selectedPath: document.getElementById("selectedPath"),
@@ -56,6 +59,8 @@ const state = {
   selectedPath: ".",
   collapsedPaths: new Set(),
   searchExpandedPaths: new Set(),
+  hasActiveSearchQuery: false,
+  resultsCollapsed: true,
   rowByPath: new Map(),
   nodeByPath: new Map()
 };
@@ -65,6 +70,7 @@ init();
 function init() {
   bindTabs();
   bindControls();
+  setResultsPanelCollapsed(true);
   restoreState();
   showSearchResultsPlaceholder("Suche starten, um Treffer aufzulisten.");
   updateSearchCount(0);
@@ -79,12 +85,9 @@ function bindTabs() {
 }
 
 function bindControls() {
-  refs.applyBtn.addEventListener("click", () => {
-    parseAndRender({ switchToViewer: true, showSuccessMessage: true });
-  });
-
   refs.loadExampleBtn.addEventListener("click", () => {
     refs.jsonInput.value = JSON.stringify(EXAMPLE_DATA, null, 2);
+    refs.selectedFileName.textContent = "Manuelle Eingabe";
     setParseMessage("Beispiel-JSON wurde geladen.", "success");
     refs.jsonInput.focus();
   });
@@ -115,6 +118,10 @@ function bindControls() {
     collapseAllNodes();
   });
 
+  refs.toggleResultsBtn.addEventListener("click", () => {
+    setResultsPanelCollapsed(!state.resultsCollapsed);
+  });
+
   refs.highlightToggle.addEventListener("change", () => {
     applyHighlightPreference();
     localStorage.setItem(STORAGE_KEYS.highlight, refs.highlightToggle.checked ? "1" : "0");
@@ -127,7 +134,41 @@ function bindControls() {
   refs.jsonInput.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
-      parseAndRender({ switchToViewer: true, showSuccessMessage: true });
+      const parsed = parseAndRender({ showSuccessMessage: true });
+      if (parsed) {
+        activateTab("viewer-tab", { skipViewerParse: true });
+      }
+    }
+  });
+
+  refs.jsonInput.addEventListener("input", () => {
+    refs.selectedFileName.textContent = "Manuelle Eingabe";
+  });
+
+  refs.jsonFileInput.addEventListener("click", () => {
+    refs.jsonFileInput.value = "";
+  });
+
+  refs.jsonFileInput.addEventListener("change", async () => {
+    const file = refs.jsonFileInput.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    refs.selectedFileName.textContent = file.name;
+
+    try {
+      const text = await file.text();
+      refs.jsonInput.value = text;
+      localStorage.setItem(STORAGE_KEYS.jsonInput, text);
+
+      const parsed = parseAndRender({ showSuccessMessage: false });
+      if (parsed) {
+        setParseMessage(`Datei „${file.name}“ wurde geladen.`, "success");
+      }
+    } catch (error) {
+      refs.selectedFileName.textContent = "Keine Datei gewählt";
+      setParseMessage("Datei konnte nicht gelesen werden.", "error");
     }
   });
 
@@ -149,7 +190,7 @@ function restoreState() {
   const savedJsonInput = localStorage.getItem(STORAGE_KEYS.jsonInput);
   if (savedJsonInput) {
     refs.jsonInput.value = savedJsonInput;
-    parseAndRender({ switchToViewer: false, showSuccessMessage: false, fromRestore: true });
+    parseAndRender({ showSuccessMessage: false, fromRestore: true });
   }
 
   const savedTabId = localStorage.getItem(STORAGE_KEYS.activeTab);
@@ -160,7 +201,16 @@ function restoreState() {
   }
 }
 
-function activateTab(tabId) {
+function activateTab(tabId, options = {}) {
+  const { skipViewerParse = false } = options;
+
+  if (tabId === "viewer-tab" && !skipViewerParse) {
+    const parsed = parseAndRender({ showSuccessMessage: false });
+    if (!parsed) {
+      tabId = "input-tab";
+    }
+  }
+
   refs.tabButtons.forEach((button) => {
     const isActive = button.dataset.tabTarget === tabId;
     button.classList.toggle("active", isActive);
@@ -198,7 +248,7 @@ function transformInput(transformFn, successText) {
 }
 
 function parseAndRender(options = {}) {
-  const { switchToViewer = false, showSuccessMessage = true, fromRestore = false } = options;
+  const { showSuccessMessage = true, fromRestore = false } = options;
   const inputText = refs.jsonInput.value.trim();
 
   if (!inputText) {
@@ -228,10 +278,6 @@ function parseAndRender(options = {}) {
       setParseMessage(`JSON erfolgreich geladen (${stats.nodeCount} Knoten).`, "success");
     } else {
       setParseMessage("", "");
-    }
-
-    if (switchToViewer) {
-      activateTab("viewer-tab");
     }
 
     return true;
@@ -454,6 +500,14 @@ function updateSelectedPath(path) {
 }
 
 function applySearch() {
+  const query = refs.searchInput.value.trim().toLowerCase();
+  const hasQuery = query.length > 0;
+
+  if (hasQuery && !state.hasActiveSearchQuery) {
+    setResultsPanelCollapsed(false);
+  }
+  state.hasActiveSearchQuery = hasQuery;
+
   if (!state.data) {
     showSearchResultsPlaceholder("Noch keine Daten geladen.");
     updateSearchCount(0);
@@ -461,8 +515,6 @@ function applySearch() {
   }
 
   restoreSearchExpandedNodes();
-
-  const query = refs.searchInput.value.trim().toLowerCase();
   state.rowByPath.forEach((row) => row.classList.remove("is-match"));
 
   if (!query) {
@@ -559,6 +611,13 @@ function updateSearchCount(count) {
 function applyHighlightPreference() {
   refs.treeContainer.classList.toggle("syntax-off", !refs.highlightToggle.checked);
   refs.treeContainer.classList.toggle("syntax-on", refs.highlightToggle.checked);
+}
+
+function setResultsPanelCollapsed(collapsed) {
+  state.resultsCollapsed = collapsed;
+  refs.viewerMain.classList.toggle("results-collapsed", collapsed);
+  refs.toggleResultsBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  refs.toggleResultsBtn.textContent = collapsed ? "Trefferliste einblenden" : "Trefferliste ausblenden";
 }
 
 async function copySelectedPath() {

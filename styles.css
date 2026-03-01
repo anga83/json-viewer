@@ -39,8 +39,8 @@ body {
 }
 
 .app-shell {
-  width: min(1180px, calc(100vw - 2rem));
-  margin: 1rem auto;
+  width: min(1720px, calc(100vw - 1rem));
+  margin: 0.5rem auto;
   padding: 1rem;
   border-radius: 1rem;
   background: color-mix(in srgb, var(--surface) 92%, white 8%);
@@ -103,6 +103,7 @@ body {
 }
 
 .toolbar button,
+.toolbar .file-picker,
 .viewer-controls button,
 #copyPathBtn {
   border: 1px solid var(--line);
@@ -116,15 +117,25 @@ body {
 }
 
 .toolbar button:hover,
+.toolbar .file-picker:hover,
 .viewer-controls button:hover,
 #copyPathBtn:hover {
   background: #f0f7f2;
   border-color: color-mix(in srgb, var(--accent) 38%, var(--line) 62%);
 }
 
-.toolbar .primary {
-  border-color: color-mix(in srgb, var(--accent) 62%, white 38%);
-  background: color-mix(in srgb, var(--accent) 14%, white 86%);
+.file-picker {
+  display: inline-flex;
+  align-items: center;
+}
+
+.file-name {
+  color: var(--muted);
+  font-size: 0.88rem;
+  max-width: min(32rem, 60vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #jsonInput {
@@ -246,10 +257,15 @@ body {
   font-size: 0.92rem;
 }
 
+#toggleResultsBtn[aria-expanded="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 46%, white 54%);
+}
+
 .viewer-main {
   margin-top: 0.75rem;
   display: grid;
-  grid-template-columns: minmax(0, 1.9fr) minmax(14rem, 1fr);
+  grid-template-columns: minmax(0, 3.2fr) minmax(18rem, 1fr);
   gap: 0.75rem;
 }
 
@@ -261,10 +277,18 @@ body {
   min-height: 23rem;
 }
 
+.viewer-main.results-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.viewer-main.results-collapsed .results-pane {
+  display: none;
+}
+
 .tree-container {
   padding: 0.7rem;
   overflow: auto;
-  max-height: 62vh;
+  max-height: 68vh;
   font-family: "Iosevka", "JetBrains Mono", "Consolas", monospace;
   font-size: 0.9rem;
 }
