@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Baum Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>JSON Baum Viewer</h1>
+      <p>JSON einfügen, validieren und als klickbare Baumansicht untersuchen.</p>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Ansichten">
+      <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab-target="input-tab">
+        JSON Eingabe
+      </button>
+      <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab-target="viewer-tab">
+        Baumansicht
+      </button>
+    </nav>
+
+    <section id="input-tab" class="tab-panel active" role="tabpanel">
+      <div class="toolbar">
+        <button id="loadExampleBtn" type="button">Beispiel laden</button>
+        <button id="formatBtn" type="button">Formatieren</button>
+        <button id="minifyBtn" type="button">Minifizieren</button>
+        <button id="applyBtn" class="primary" type="button">Übernehmen</button>
+      </div>
+      <label class="sr-only" for="jsonInput">JSON Eingabe</label>
+      <textarea
+        id="jsonInput"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder='{"profil":{"name":"Ada","rolle":"Entwicklerin"}}'
+      ></textarea>
+      <div id="parseMessage" class="parse-message" aria-live="polite"></div>
+    </section>
+
+    <section id="viewer-tab" class="tab-panel" role="tabpanel" hidden>
+      <div class="viewer-controls">
+        <div class="search-group">
+          <input id="searchInput" type="search" placeholder="Suche in Schlüsseln und Werten…">
+          <button id="clearSearchBtn" type="button">Leeren</button>
+          <span id="searchCount" class="badge">0 Treffer</span>
+        </div>
+        <div class="action-group">
+          <button id="expandAllBtn" type="button">Alle erweitern</button>
+          <button id="collapseAllBtn" type="button">Alle reduzieren</button>
+          <label class="switch" for="highlightToggle">
+            <input id="highlightToggle" type="checkbox" checked>
+            <span class="switch-track"></span>
+            <span class="switch-text">Syntax-Highlighting</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="viewer-main">
+        <div class="tree-pane">
+          <div id="treeContainer" class="tree-container syntax-on" aria-live="polite">
+            <div class="placeholder">Noch kein JSON geladen.</div>
+          </div>
+        </div>
+        <aside class="results-pane">
+          <h2>Trefferliste</h2>
+          <ul id="searchResults" class="search-results"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <footer class="status-bar">
+      <div class="status-path">
+        <span>Lokation:</span>
+        <code id="selectedPath">.</code>
+      </div>
+      <div class="status-meta">
+        <span id="jsonStats">Keine Daten geladen</span>
+        <button id="copyPathBtn" type="button">Pfad kopieren</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
